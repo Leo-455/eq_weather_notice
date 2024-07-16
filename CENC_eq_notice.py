@@ -43,7 +43,4 @@ else:
         lons.append(float(lon)) #源文件是字符串，转成浮点型
         lats.append(float(lat)) #源文件是字符串，转成浮点型
         depths.append(float(depth)) #源文件是字符串，转成浮点型
-    
-    notification.notify(
-        title = "titles",
-    )
+    print(f"{title}震级{mag}深度{depth}")
