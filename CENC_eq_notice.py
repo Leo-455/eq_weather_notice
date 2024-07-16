@@ -38,9 +38,5 @@ else:
         lon = response[f"No{number}"]["longitude"]
         lat = response[f"No{number}"]["latitude"]
         depth = response[f"No{number}"]["depth"]
-        mags.append(float(mag)) #源文件是字符串，转成浮点型
-        titles.append(title)
-        lons.append(float(lon)) #源文件是字符串，转成浮点型
-        lats.append(float(lat)) #源文件是字符串，转成浮点型
-        depths.append(float(depth)) #源文件是字符串，转成浮点型
+        
     print(f"{title}震级{mag}深度{depth}")
