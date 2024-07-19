@@ -41,8 +41,8 @@ else:
     for eq_dict in response:
         mag = response[f"No{number}"]["magnitude"]
         location = response[f"No{number}"]["location"]
-        lon = response[f"No{number}"]["longitude"]
-        lat = response[f"No{number}"]["latitude"]
+        #lon = response[f"No{number}"]["longitude"]暂时用不到
+        #lat = response[f"No{number}"]["latitude"]
         depth = response[f"No{number}"]["depth"]
         intensity = response[f"No{number}"]["intensity"]
     
@@ -53,4 +53,4 @@ else:
         timeout=10,#弹窗持续时间
         )
     #终端输出
-    print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度")    
+    print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度")
