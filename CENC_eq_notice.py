@@ -50,7 +50,7 @@ else:
     notification.notify(
         title="CENC地震信息",
         message=f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度",
-        timeout=10,#弹窗持续时间
+        timeout=60,#弹窗持续时间
         )
     #终端输出
     print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度")
