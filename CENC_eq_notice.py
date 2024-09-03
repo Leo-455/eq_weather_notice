@@ -24,7 +24,7 @@ md5_new = md5
 count = 0
 
 while md5_new == md5:
-    sleep(60)
+    sleep(30)
     #CENC API
     url = "https://api.wolfx.jp/cenc_eqlist.json"
     r = requests.get(url)
@@ -36,6 +36,7 @@ while md5_new == md5:
     print(count)
     count = count+1
 else:
+    sleep(1)
     #提取震级、标题、经纬度
     number = 1
     for eq_dict in response:
@@ -45,12 +46,18 @@ else:
         #lat = response[f"No{number}"]["latitude"]
         depth = response[f"No{number}"]["depth"]
         intensity = response[f"No{number}"]["intensity"]
-    
+        type = response[f"No{number}"]["type"]
+
+    if type == "reviewed":
+        类别 = "正式测定"
+    else:
+        类别 = "自动测定"
+
     #Windows通知弹窗
     notification.notify(
-        title="CENC地震信息",
+        title=f"CENC地震信息({类别})",
         message=f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度",
-        timeout=60,#弹窗持续时间
+        timeout=30,#弹窗持续时间
         )
     #终端输出
     print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度")
