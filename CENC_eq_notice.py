@@ -15,7 +15,7 @@ md5 = response["md5"] #提取初始MD5
 notification.notify(
     title="程序开始运行",
     message=f"当前md5值：{md5}",
-    timeout=5,#弹窗持续时间
+    timeout=5,#弹窗持续时间(由windows觉得决定，似乎改不了)
     )
 
 md5_new = md5 #重置MD5值
@@ -38,30 +38,32 @@ while active == True:
         print(count)
         count = count+1
     else:
-        #sleep(10) #调试的时候防止死循环
+        sleep(10) #!!调试的时候防止死循环!!
         #提取震级、标题、经纬度
         number = 1
         for eq_dict in response:
             mag = response[f"No{number}"]["magnitude"] #震级
-            location = response[f"No{number}"]["location"] #标题
+            location = response[f"No{number}"]["location"] #震源地
             #lon = response[f"No{number}"]["longitude"]暂时用不到
             #lat = response[f"No{number}"]["latitude"]
             depth = response[f"No{number}"]["depth"] #震源深
-            intensity = response[f"No{number}"]["intensity"] #预想烈度
+            intensity = response[f"No{number}"]["intensity"] #最大烈度
             type = response[f"No{number}"]["type"] #自动/正式
+            time = response[f"No{number}"]["time"] #发震时刻
 
         if type == "reviewed":
             类别 = "正式测定"
             wait = 60
-        else: #不知道自动测定的标签是什么
+        
+        if type == "automatic":
             类别 = "自动测定"
             wait = 1
             
         #Windows通知弹窗
         notification.notify(
             title=f"CENC地震信息（{类别}）",
-            message=f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度",
+            message=f"发震时间：{time},震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度",#这玩意咋换行啊？？？
             timeout=60, #弹窗持续时间
             )
         #终端输出
-        print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，预想烈度:{intensity}度")
+        print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度")
