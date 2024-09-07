@@ -5,9 +5,10 @@ from plyer import notification #通知弹窗库
 from time import sleep
 
 #初始请求
+sleep(5) #防止开机自启连不上网报错
 url = "https://api.wolfx.jp/cenc_eqlist.json" #CENCapi
-r = requests.get(url) #打印状态码
-print(f"状态{r.status_code}") #存储并打印结果
+r = requests.get(url) #存储请求结果
+print(f"状态{r.status_code}") #打印状态码
 response = r.json()
 md5 = response["md5"] #提取初始MD5
 
@@ -18,13 +19,13 @@ notification.notify(
     timeout=5,#弹窗持续时间(由windows觉得决定，似乎改不了)
     )
 
-md5_new = md5 #重置MD5值
 count = 0 #重置计数
 active = True #初始化活动状态
 wait = 60 #初始化等待时间
 
 #得让下面这一段重复运行
 while active == True:
+    md5_new = md5 #重置MD5值
     while md5_new == md5: #循环，判断MD5值是否改变
         sleep(wait)
         #CENC API
@@ -34,11 +35,12 @@ while active == True:
         print(f"状态{r.status_code}")
         #存储并打印结果
         response = r.json()
-        md5 = response["md5"]
+        md5 = response["md5"] #提取信MD5值
         print(count)
         count = count+1
     else:
-        sleep(10) #!!调试的时候防止死循环!!
+        #sleep(10) #!!调试的时候防止死循环!!
+        md5 = response["md5"] #提取新的MD5值
         #提取震级、标题、经纬度
         number = 1
         for eq_dict in response:
