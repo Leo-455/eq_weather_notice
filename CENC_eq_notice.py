@@ -9,7 +9,7 @@ sleep(5) #防止开机自启连不上网报错
 url = "https://api.wolfx.jp/cenc_eqlist.json" #CENCapi
 r = requests.get(url) #存储请求结果
 print(f"状态{r.status_code}") #打印状态码
-response = r.json()
+response = r.json() #?
 md5 = response["md5"] #提取初始MD5
 
 #Windows通知弹窗
@@ -31,9 +31,7 @@ while active == True:
         #CENC API
         url = "https://api.wolfx.jp/cenc_eqlist.json"
         r = requests.get(url)
-        #打印状态码
-        print(f"状态{r.status_code}")
-        #存储并打印结果
+        print(f"状态{r.status_code}") #打印状态码
         response = r.json()
         md5 = response["md5"] #提取信MD5值
         print(count)
