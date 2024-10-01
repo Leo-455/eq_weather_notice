@@ -1,6 +1,7 @@
 #--coding:UTF-8--
 import requests #api库
 import json
+import time
 from plyer import notification #通知弹窗库
 from time import sleep
 
@@ -8,7 +9,7 @@ from time import sleep
 sleep(5) #防止开机自启连不上网报错
 url = "https://api.wolfx.jp/cenc_eqlist.json" #CENCapi
 r = requests.get(url) #存储请求结果
-print(f"状态{r.status_code}") #打印状态码
+print(f"状态码{r.status_code} 程序开始运行") #打印状态码
 response = r.json() #?
 md5 = response["md5"] #提取初始MD5
 
@@ -31,10 +32,10 @@ while active == True:
         #CENC API
         url = "https://api.wolfx.jp/cenc_eqlist.json"
         r = requests.get(url)
-        print(f"状态{r.status_code}") #打印状态码
         response = r.json()
-        md5 = response["md5"] #提取信MD5值
-        print(count)
+        md5 = response["md5"] #提取新MD5值
+        t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
+        print(f"{t} BJT  {count}次  状态码{r.status_code}")
         count = count+1
     else:
         #sleep(10) #!!调试的时候防止死循环!!
@@ -66,4 +67,4 @@ while active == True:
             timeout=60, #弹窗持续时间
             )
         #终端输出
-        print(f"震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度")
+        print(f"CENC地震信息（{类别}）震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度")
