@@ -5,52 +5,47 @@ import time
 from plyer import notification #通知弹窗库
 from time import sleep
 
-#初始请求
-sleep(5) #防止开机自启连不上网报错
-url = "https://api.wolfx.jp/cenc_eqlist.json" #CENCapi
-r = requests.get(url) #存储请求结果
-print(f"状态码{r.status_code} 程序开始运行") #打印状态码
-response = r.json() #?
-md5 = response["md5"] #提取初始MD5
-
-#Windows通知弹窗
-notification.notify(
-    title="程序开始运行",
-    message=f"当前md5值：{md5}",
-    timeout=5,#弹窗持续时间(由windows觉得决定，似乎改不了)
-    )
-
 count = 0 #重置计数
 active = True #初始化活动状态
 wait = 60 #初始化等待时间
+md5 = 0 #初始化MD5值
 
-#得让下面这一段重复运行
-while active == True:
+while active == True: #循环
     md5_new = md5 #重置MD5值
     while md5_new == md5: #循环，判断MD5值是否改变
         try:
             sleep(wait)
-            #CENC API
-            url = "https://api.wolfx.jp/cenc_eqlist.json"
-            r = requests.get(url)
+            url = "https://api.wolfx.jp/cenc_eqlist.json" #CENC API
+            r = requests.get(url) #请求
+            response = r.json() #存储
+            md5 = response["md5"] #提取新MD5值
+            
+            #处理异常状态码（未测试）
             if r.status_code != 200:
                 print("请求失败，状态码:", r.status_code)
-                break  # 可以选择在请求失败时退出
-            response = r.json()
-            md5 = response["md5"] #提取新MD5值
-            t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
-            print(f"{t} BJT  {count}次  状态码{r.status_code}")
-            count = count+1
-        except requests.exceptions.ConnectionError as e:
-            t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
-            print(f"{t} 网络连接中断，正在重试...")
+                break  #在请求失败时退出
+            
+            #处理第一次请求
+            if count == 0:
+                md5_new = md5 #初始化md5_new
+                #Windows通知弹窗
+                notification.notify(
+                    title="程序开始运行",
+                    message=f"当前md5值：{md5}"
+                    )
+            
+            t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
+            print(f"{t} BJT  {count}次  状态码{r.status_code}") #终端状态输出
+            count = count+1 #计数加1
+        except requests.exceptions.ConnectionError as e: #处理网络中断
+            t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
+            print(f"{t} 网络连接中断，正在重试...") #终端状态输出
             sleep(wait)  # 等待后重试
             continue  # 继续循环，尝试再次请求
     else:
         #sleep(10) #!!调试的时候防止死循环!!
-        md5 = response["md5"] #提取新的MD5值
         #提取震级、标题、经纬度
-        number = 1
+        number = 1 #要提取的地震列表位置（1为第一个）
         for eq_dict in response:
             mag = response[f"No{number}"]["magnitude"] #震级
             location = response[f"No{number}"]["location"] #震源地
