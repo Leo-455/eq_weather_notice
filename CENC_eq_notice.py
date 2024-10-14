@@ -9,13 +9,13 @@ count = 0 #重置计数
 active = True #初始化活动状态
 wait = 60 #初始化等待时间
 md5 = 0 #初始化MD5值
+url = "https://api.wolfx.jp/cenc_eqlist.json" #CENC API
 
 while active == True: #循环
     md5_new = md5 #重置MD5值
     while md5_new == md5: #循环，判断MD5值是否改变
         try:
             sleep(wait)
-            url = "https://api.wolfx.jp/cenc_eqlist.json" #CENC API
             r = requests.get(url) #请求
             response = r.json() #存储
             md5 = response["md5"] #提取新MD5值
@@ -30,8 +30,8 @@ while active == True: #循环
                 md5_new = md5 #初始化md5_new
                 #Windows通知弹窗
                 notification.notify(
-                    title="程序开始运行",
-                    message=f"当前md5值：{md5}"
+                    title = "程序开始运行",
+                    message = f"当前md5值：{md5}"
                     )
             
             t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
@@ -59,16 +59,16 @@ while active == True: #循环
         if type == "reviewed":
             类别 = "正式测定"
             wait = 60
-        
+
         if type == "automatic":
             类别 = "自动测定"
             wait = 1
-            
+
         #Windows通知弹窗
         notification.notify(
-            title=f"CENC地震信息（{类别}）",
-            message=f"发震时间：{eq_time},震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度",#这玩意咋换行啊？？？
-            timeout=60, #弹窗持续时间
+            title = f"CENC地震信息（{类别}）",
+            message = f"发震时间：{eq_time},震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度",#这玩意咋换行啊？？？
+            timeout = 60, #弹窗持续时间
             )
         #终端输出
         print(f"CENC地震信息（{类别}）,发震时间：{eq_time},震源:{location}，震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度")
