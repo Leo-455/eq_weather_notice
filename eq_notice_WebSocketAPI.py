@@ -67,6 +67,77 @@ def on_message(ws, r):
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}，最大震度:{shindo}，{tsunami}"
         message(output,type) #调用通知函数
 
+    #四川地震局 地震预警
+    if type == "sc_eew":
+        eq_time = response["OriginTime"] #发震时间
+        location = response["HypoCenter"] #震源地
+        lon = response["Longitude"] #震源地经度
+        lat = response["Latitude"] #震源地纬度
+        mag = response["Magunitude"] #震级
+        #depth = response["Depth"] #震源深度(原报文未提供)
+        intensity = response["MaxIntensity"] #最大烈度
+        report_num = response["ReportNum"] #EEW发报数
+
+        #格式化输出
+        type = f"四川地震局 地震预警 第{report_num}报"
+        output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，最大烈度:{intensity}"
+        message(output,type) #调用通知函数
+
+    #福建地震局 地震预警
+    if type == "fj_eew":
+        eq_time = response["OriginTime"] #发震时间
+        location = response["HypoCenter"] #震源地
+        lon = response["Longitude"] #震源地经度
+        lat = response["Latitude"] #震源地纬度
+        mag = response["Magunitude"] #震级
+        report_num = response["ReportNum"] #EEW发报数
+        isFinal = response["isFinal"] #是否为最终报
+        
+        #格式化输出
+        if isFinal == True:
+            isFinal = "（最终）"
+        else:
+            isFinal = ""
+        
+        type = f"福建地震局 地震预警 第{report_num}报{isFinal}"
+        output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}"
+        message(output,type)
+        
+    #JMA 緊急地震速報
+    if type == "jma_eew":
+        eq_time = response["OriginTime"] #发震时间
+        location = response["Hypocenter"] #震源地
+        lon = response["Longitude"] #震源地经度
+        lat = response["Latitude"] #震源地纬度
+        mag = response["Magunitude"] #震级
+        depth = response["Depth"] #震源深度
+        shindo = response["MaxIntensity"] #最大震度
+        type = response["Title"] #EEW发报报头
+        report_num = response["Serial"] #EEW发报数
+        isAssumption = response["isAssumption"] #是否为推定震源（PLUM/レベル/IPF法）
+        isFinal = response["isFinal"] #是否为最终报
+        isCancel = response["isCancel"] #是否为取消报
+        
+        #格式化输出
+        if isFinal == True:
+            isFinal = "（最终）"
+        else:
+            isFinal = ""
+
+        if isCancel == True:
+            isCancel = "（取消）"
+        else:
+            isCancel = ""
+
+        if isAssumption == True:
+            isAssumption = "推定"
+        else:
+            isAssumption = ""
+
+        type = f"{type} 第{report_num}报{isFinal}{isCancel}"
+        output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{shindo}"
+        message(output,type) #调用通知函数
+
     #CWA 地震预警
     if type == "cwa_eew":
         eq_time = response["OriginTime"] #发震时间
@@ -81,7 +152,7 @@ def on_message(ws, r):
         #格式化输出
         type = f"CWA 地震预警（第{report_num}报）"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{intensity}"
-        message(output,type)
+        message(output,type) #调用通知函数
 
 # 回调函数，处理连接关闭
 def on_close(ws, close_status_code, close_msg):
@@ -103,10 +174,10 @@ def message(output,type):
     toaster = ToastNotifier()
     toaster.show_toast(f"{type}",f"{output}",duration=10)
     #终端输出
-    print(f"{type}：{output}")
+    print(f"{type} {output}")
     #写入文件
     with open("D:\\programing\\python\\eq_weather_notice\\eq_log.txt.txt","a",encoding='utf-8') as file:
-        file.write(f"{type}：{output}\n")
+        file.write(f"{type} {output}\n")
     #打开记录
     subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
 
