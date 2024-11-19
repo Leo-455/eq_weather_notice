@@ -52,7 +52,7 @@ def on_message(ws, r):
         message(output,type) #调用通知函数
 
     #JMA 地震情報
-    if type == "query_jmaeqlist":
+    if type == "jma_eqlist":
         mag = response[f"No{number}"]["magnitude"] #震级
         location = response[f"No{number}"]["location"] #震源地
         lon = response[f"No{number}"]["longitude"] #经度
