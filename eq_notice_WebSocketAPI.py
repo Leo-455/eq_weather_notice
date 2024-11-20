@@ -9,7 +9,7 @@ import subprocess #用于启动python
 number = 1 #要提取的地震列表（1为最新的）
 
 # 回调函数，处理连接打开
-def on_open(ws):
+def on_open(ws): #这里的ws不能删
     print("连接已打开")
     #Windows通知弹窗
     toaster = ToastNotifier()
@@ -113,7 +113,7 @@ def on_message(ws, r):
         lat = response["Latitude"] #震源地纬度
         mag = response["Magunitude"] #震级
         depth = response["Depth"] #震源深度
-        shindo = response["MaxIntensity"] #最大震度
+        shindo = response["MaxIntensity"] #预估最大震度
         type = response["Title"] #EEW发报报头
         report_num = response["Serial"] #EEW发报数
         isAssumption = response["isAssumption"] #是否为推定震源（PLUM/レベル/IPF法）
@@ -137,7 +137,7 @@ def on_message(ws, r):
             isAssumption = ""
 
         type = f"{type} 第{report_num}报{isFinal}{isCancel}"
-        output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{shindo}"
+        output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，预估最大震度:{shindo}"
         message(output,type) #调用通知函数
 
     #CWA 地震预警
@@ -166,7 +166,7 @@ def on_close(ws, close_status_code, close_msg):
     ws.run_forever()
 
 #通知和记录函数
-def message(ws,output,type):
+def message(output,type): #这里不能加ws
     #Windows通知弹窗
     toaster = ToastNotifier()
     toaster.show_toast(f"{type}",f"{output}",duration=10,threaded=True)
