@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import websocket
 import json
 import time
@@ -8,11 +9,11 @@ import subprocess #用于启动python
 number = 1 #要提取的地震列表（1为最新的）
 
 # 回调函数，处理连接打开
-def on_open():
+def on_open(ws):
     print("连接已打开")
     #Windows通知弹窗
     toaster = ToastNotifier()
-    toaster.show_toast("CENC_eq_notice","程序正在运行，连接已打开",duration=10)
+    toaster.show_toast("CENC_eq_notice","程序正在运行，连接已打开",duration=10,threaded=True)
 
 # 回调函数，处理接收到的消息
 def on_message(ws, r):
@@ -61,9 +62,10 @@ def on_message(ws, r):
         shindo = response[f"No{number}"]["shindo"] #最大震度
         eq_time = response[f"No{number}"]["time_full"] #发震时刻
         tsunami = response[f"No{number}"]["info"] #海啸信息
+        type = response[f"No{number}"]["Title"] #发报报头
 
         #格式化输出
-        type = "JMA 地震情報"
+        type = f"JMA {type}"
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}，最大震度:{shindo}，{tsunami}"
         message(output,type) #调用通知函数
 
@@ -158,28 +160,23 @@ def on_message(ws, r):
 def on_close(ws, close_status_code, close_msg):
     t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
     print(f"{t} 连接已关闭，状态码: {close_status_code}，消息: {close_msg}") #终端输出
-    connection = False
-    while connection == False:
-        time.sleep(5)  #等待5秒后重连
-        print("尝试重连...")
-        try:
-            ws.run_forever()  #重新运行 WebSocket 客户端
-            break
-        except Exception as e:
-            print(f"重连失败: {e}")
+    #等待5秒后重连
+    time.sleep(5)
+    print("尝试重连中. . .")
+    ws.run_forever()
 
 #通知和记录函数
-def message(output,type):
+def message(ws,output,type):
     #Windows通知弹窗
     toaster = ToastNotifier()
-    toaster.show_toast(f"{type}",f"{output}",duration=10)
+    toaster.show_toast(f"{type}",f"{output}",duration=10,threaded=True)
     #终端输出
     print(f"{type} {output}")
     #写入文件
-    with open("D:\\programing\\python\\eq_weather_notice\\eq_log.txt.txt","a",encoding='utf-8') as file:
+    with open("D:\\programing\\python\\eq_weather_notice\\eq_log.txt","a",encoding='utf-8') as file:
         file.write(f"{type} {output}\n")
     #打开记录
-    subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
+#    subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
 
 # WebSocket 客户端线程函数
 def start_websocket():
@@ -188,7 +185,7 @@ def start_websocket():
         ws_url,
         on_open=on_open,
         on_message=on_message,
-        on_close=on_close
+        on_close=on_close,
     )
     ws.run_forever()
 
