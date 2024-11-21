@@ -2,11 +2,16 @@
 import websocket
 import json
 import time
+from datetime import datetime #用于提取时间
+import pytz #用于时区转换
 from win10toast import ToastNotifier #通知弹窗库
+#import win11toast
 import threading #用于多线程支持
 import subprocess #用于启动python
 
 number = 1 #要提取的地震列表（1为最新的）
+eq_timezone = pytz.timezone("Asia/Tokyo") #地震时区
+target_timezone = pytz.timezone("Asia/Shanghai") #目标时区
 
 # 回调函数，处理连接打开
 def on_open(ws): #这里的ws不能删
@@ -14,6 +19,7 @@ def on_open(ws): #这里的ws不能删
     #Windows通知弹窗
     toaster = ToastNotifier()
     toaster.show_toast("CENC_eq_notice","程序正在运行，连接已打开",duration=10,threaded=True)
+    #win11toast.toast("CENC_eq_notice","程序正在运行，连接已打开")
 
 # 回调函数，处理接收到的消息
 def on_message(ws, r):
@@ -46,6 +52,7 @@ def on_message(ws, r):
         #格式化输出
         if type == "reviewed":
             type = "中国地震台网速报（正式）"
+            #duration = "long"
         else:
             type = "中国地震台网速报（自动）"
 
@@ -64,9 +71,14 @@ def on_message(ws, r):
         tsunami = response[f"No{number}"]["info"] #海啸信息
         type = response[f"No{number}"]["Title"] #发报报头
 
+        #时区转换
+        eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
+        eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
+        eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
         #格式化输出
         type = f"JMA {type}"
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}，最大震度:{shindo}，{tsunami}"
+        #duration = "long"
         message(output,type) #调用通知函数
 
     #四川地震局 地震预警
@@ -83,6 +95,7 @@ def on_message(ws, r):
         #格式化输出
         type = f"四川地震局 地震预警 第{report_num}报"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，最大烈度:{intensity}"
+        #duration = ""
         message(output,type) #调用通知函数
 
     #福建地震局 地震预警
@@ -103,7 +116,8 @@ def on_message(ws, r):
         
         type = f"福建地震局 地震预警 第{report_num}报{isFinal}"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}"
-        message(output,type)
+        #duration = ""
+        message(output,type) #调用通知函数
         
     #JMA 緊急地震速報
     if type == "jma_eew":
@@ -120,6 +134,10 @@ def on_message(ws, r):
         isFinal = response["isFinal"] #是否为最终报
         isCancel = response["isCancel"] #是否为取消报
         
+        #时区转换
+        eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
+        eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
+        eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
         #格式化输出
         if isFinal == True:
             isFinal = "（最终）"
@@ -138,6 +156,7 @@ def on_message(ws, r):
 
         type = f"{type} 第{report_num}报{isFinal}{isCancel}"
         output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，预估最大震度:{shindo}"
+        #duration = ""
         message(output,type) #调用通知函数
 
     #CWA 地震预警
@@ -154,6 +173,7 @@ def on_message(ws, r):
         #格式化输出
         type = f"CWA 地震预警（第{report_num}报）"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{intensity}"
+        #duration = ""
         message(output,type) #调用通知函数
 
 # 回调函数，处理连接关闭
@@ -170,6 +190,7 @@ def message(output,type): #这里不能加ws
     #Windows通知弹窗
     toaster = ToastNotifier()
     toaster.show_toast(f"{type}",f"{output}",duration=10,threaded=True)
+#    win11toast.toast(f"{type}",f"{output}",duration=f"{duration}")
     #终端输出
     print(f"{type} {output}")
     #写入文件
