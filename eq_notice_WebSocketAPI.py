@@ -10,32 +10,29 @@ import threading #用于多线程支持
 import subprocess #用于启动python
 
 number = 1 #要提取的地震列表（1为最新的）
-eq_timezone = pytz.timezone("Asia/Tokyo") #地震时区
-target_timezone = pytz.timezone("Asia/Shanghai") #目标时区
 
 # 回调函数，处理连接打开
 def on_open(ws): #这里的ws不能删
     print("连接已打开")
     #Windows通知弹窗
     toaster = ToastNotifier()
-    toaster.show_toast("CENC_eq_notice","程序正在运行，连接已打开",duration=10,threaded=True)
-    #win11toast.toast("CENC_eq_notice","程序正在运行，连接已打开")
+    toaster.show_toast("EQ_notice","程序正在运行，连接已打开",duration=10,threaded=True)
 
 # 回调函数，处理接收到的消息
 def on_message(ws, r):
     response = json.loads(r) #将收到的消息解析为json
-    print(f"{response}") #打印响应（调试）
+    #print(f"{response}") #打印响应（调试）
     type = response["type"] #提取type字段
 
     #收到心跳包
     if type == "heartbeat":
         ws.send("ping") #回复ping包
-        t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
+        t = current_time() #获取当前时间
         print(f"{t} 收到{type}包，ping包已发送") #终端输出
 
     #收到pong包
     if type == "pong":
-        t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
+        t = current_time() #获取当前时间
         print(f"{t} 收到{type}包") #终端输出
 
     #中国地震台网 地震信息
@@ -52,11 +49,10 @@ def on_message(ws, r):
         #格式化输出
         if type == "reviewed":
             type = "中国地震台网速报（正式）"
-            #duration = "long"
         else:
             type = "中国地震台网速报（自动）"
 
-        output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}度"
+        output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}"
         message(output,type) #调用通知函数
 
     #JMA 地震情報
@@ -71,14 +67,12 @@ def on_message(ws, r):
         tsunami = response[f"No{number}"]["info"] #海啸信息
         type = response[f"No{number}"]["Title"] #发报报头
 
-        #时区转换
-        eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
-        eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
-        eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
+        eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
+        eq_time = timezone_convert(eq_time,eq_timezone) #调用时区转换函数
+
         #格式化输出
         type = f"JMA {type}"
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}，最大震度:{shindo}，{tsunami}"
-        #duration = "long"
         message(output,type) #调用通知函数
 
     #四川地震局 地震预警
@@ -95,7 +89,6 @@ def on_message(ws, r):
         #格式化输出
         type = f"四川地震局 地震预警 第{report_num}报"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，最大烈度:{intensity}"
-        #duration = ""
         message(output,type) #调用通知函数
 
     #福建地震局 地震预警
@@ -116,7 +109,6 @@ def on_message(ws, r):
         
         type = f"福建地震局 地震预警 第{report_num}报{isFinal}"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}"
-        #duration = ""
         message(output,type) #调用通知函数
         
     #JMA 緊急地震速報
@@ -134,10 +126,9 @@ def on_message(ws, r):
         isFinal = response["isFinal"] #是否为最终报
         isCancel = response["isCancel"] #是否为取消报
         
-        #时区转换
-        eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
-        eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
-        eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
+        eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
+        eq_time = timezone_convert(eq_time,eq_timezone) #调用时区转换函数
+
         #格式化输出
         if isFinal == True:
             isFinal = "（最终）"
@@ -156,7 +147,6 @@ def on_message(ws, r):
 
         type = f"{type} 第{report_num}报{isFinal}{isCancel}"
         output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，预估最大震度:{shindo}"
-        #duration = ""
         message(output,type) #调用通知函数
 
     #CWA 地震预警
@@ -173,12 +163,11 @@ def on_message(ws, r):
         #格式化输出
         type = f"CWA 地震预警（第{report_num}报）"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{intensity}"
-        #duration = ""
         message(output,type) #调用通知函数
 
 # 回调函数，处理连接关闭
 def on_close(ws, close_status_code, close_msg):
-    t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()) #获取当前时间
+    t = current_time()
     print(f"{t} 连接已关闭，状态码: {close_status_code}，消息: {close_msg}") #终端输出
     #等待5秒后重连
     time.sleep(5)
@@ -186,11 +175,10 @@ def on_close(ws, close_status_code, close_msg):
     ws.run_forever()
 
 #通知和记录函数
-def message(output,type): #这里不能加ws
+def message(type,output): #这里不能加ws
     #Windows通知弹窗
     toaster = ToastNotifier()
     toaster.show_toast(f"{type}",f"{output}",duration=10,threaded=True)
-#    win11toast.toast(f"{type}",f"{output}",duration=f"{duration}")
     #终端输出
     print(f"{type} {output}")
     #写入文件
@@ -198,6 +186,19 @@ def message(output,type): #这里不能加ws
         file.write(f"{type} {output}\n")
     #打开记录
 #    subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
+
+#获取当前时间函数
+def current_time():
+    t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
+    return t
+
+#时区转换函数
+def timezone_convert(eq_time,eq_timezone):
+    target_timezone = pytz.timezone("Asia/Shanghai") #设置目标时区
+    eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
+    eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
+    eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
+    return eq_time
 
 # WebSocket 客户端线程函数
 def start_websocket():
