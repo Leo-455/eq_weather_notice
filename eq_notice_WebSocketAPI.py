@@ -53,7 +53,7 @@ def on_message(ws, r):
             type = "中国地震台网速报（自动）"
 
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大烈度:{intensity}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
 
     #JMA 地震情報
     if type == "jma_eqlist":
@@ -68,12 +68,12 @@ def on_message(ws, r):
         type = response[f"No{number}"]["Title"] #发报报头
 
         eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
-        eq_time = timezone_convert(eq_time,eq_timezone) #调用时区转换函数
+        eq_time = timezone_convert(eq_time = f"{eq_time}",eq_timezone = f"{eq_timezone}") #调用时区转换函数
 
         #格式化输出
         type = f"JMA {type}"
         output = f"发震时间：{eq_time},震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}，最大震度:{shindo}，{tsunami}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
 
     #四川地震局 地震预警
     if type == "sc_eew":
@@ -89,7 +89,7 @@ def on_message(ws, r):
         #格式化输出
         type = f"四川地震局 地震预警 第{report_num}报"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，最大烈度:{intensity}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
 
     #福建地震局 地震预警
     if type == "fj_eew":
@@ -109,7 +109,7 @@ def on_message(ws, r):
         
         type = f"福建地震局 地震预警 第{report_num}报{isFinal}"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
         
     #JMA 緊急地震速報
     if type == "jma_eew":
@@ -127,7 +127,7 @@ def on_message(ws, r):
         isCancel = response["isCancel"] #是否为取消报
         
         eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
-        eq_time = timezone_convert(eq_time,eq_timezone) #调用时区转换函数
+        eq_time = timezone_convert(eq_time = f"{eq_time}",eq_timezone = f"{eq_timezone}") #调用时区转换函数
 
         #格式化输出
         if isFinal == True:
@@ -147,7 +147,7 @@ def on_message(ws, r):
 
         type = f"{type} 第{report_num}报{isFinal}{isCancel}"
         output = f"发震时间：{eq_time}，{isAssumption}震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，预估最大震度:{shindo}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
 
     #CWA 地震预警
     if type == "cwa_eew":
@@ -163,7 +163,7 @@ def on_message(ws, r):
         #格式化输出
         type = f"CWA 地震预警（第{report_num}报）"
         output = f"发震时间：{eq_time}，震源:{location}（{lat},{lon}），震级:M{mag}，震源深:{depth}km，最大震度:{intensity}"
-        message(output,type) #调用通知函数
+        message(type = f"{type}",output = f"{output}") #调用通知函数
 
 # 回调函数，处理连接关闭
 def on_close(ws, close_status_code, close_msg):
