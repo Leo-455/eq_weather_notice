@@ -68,7 +68,7 @@ def on_message(ws, r):
         tsunami = response[f"No{number}"]["info"] #海啸信息
         type = response[f"No{number}"]["Title"] #发报报头
 
-        eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
+        eq_timezone = "Asia/Tokyo" #设置地震时区
         eq_time = timezone_convert(eq_time = eq_time,eq_timezone = eq_timezone) #调用时区转换函数
 
         #格式化输出
@@ -127,7 +127,7 @@ def on_message(ws, r):
         isFinal = response["isFinal"] #是否为最终报
         isCancel = response["isCancel"] #是否为取消报
         
-        eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
+        eq_timezone = "Asia/Tokyo" #设置地震时区
         eq_time = timezone_convert(eq_time = eq_time,eq_timezone = eq_timezone) #调用时区转换函数
 
         #格式化输出
@@ -175,8 +175,8 @@ def on_close(ws, close_status_code, close_msg):
     print("尝试重连中. . .")
     ws.run_forever()
 
-#通知和记录函数
 def message(type,output): #这里不能加ws
+    """通知和记录函数：弹窗、终端输出，写入记录"""
     #Windows通知弹窗
     toaster = ToastNotifier()
     toaster.show_toast(f"{type}",f"{output}",duration=10,threaded=True)
@@ -189,14 +189,15 @@ def message(type,output): #这里不能加ws
 #    shake_log.start_websocket()
 #    subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
 
-#获取当前时间函数
 def current_time():
+    """获取当前时间"""
     t = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
     return t
 
-#时区转换函数
 def timezone_convert(eq_time,eq_timezone):
+    """将地震时区转换为北京时间，应传入字符串"""
     target_timezone = pytz.timezone("Asia/Shanghai") #设置目标时区
+    eq_timezone = pytz.timezone(eq_timezone)  # 转换为 pytz 时区对象
     eq_time = datetime.strptime(f"{eq_time}","%Y/%m/%d %H:%M:%S") #将字符串提取为时间 2024/11/21 00:09:09
     eq_time = eq_timezone.localize(eq_time).astimezone(target_timezone) #时区转换
     eq_time = eq_time.strftime("%Y-%m-%d %H:%M:%S") #格式化输出 2024-11-20 23:09:09
