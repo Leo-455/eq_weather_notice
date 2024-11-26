@@ -7,7 +7,8 @@ import pytz #用于时区转换
 from win10toast import ToastNotifier #通知弹窗库
 #import win11toast
 import threading #用于多线程支持
-import subprocess #用于启动python
+#import subprocess #用于启动python
+#import shake_log
 
 number = 1 #要提取的地震列表（1为最新的）
 
@@ -68,7 +69,7 @@ def on_message(ws, r):
         type = response[f"No{number}"]["Title"] #发报报头
 
         eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
-        eq_time = timezone_convert(eq_time = f"{eq_time}",eq_timezone = f"{eq_timezone}") #调用时区转换函数
+        eq_time = timezone_convert(eq_time = eq_time,eq_timezone = eq_timezone) #调用时区转换函数
 
         #格式化输出
         type = f"JMA {type}"
@@ -127,7 +128,7 @@ def on_message(ws, r):
         isCancel = response["isCancel"] #是否为取消报
         
         eq_timezone = pytz.timezone("Asia/Tokyo") #设置地震时区
-        eq_time = timezone_convert(eq_time = f"{eq_time}",eq_timezone = f"{eq_timezone}") #调用时区转换函数
+        eq_time = timezone_convert(eq_time = eq_time,eq_timezone = eq_timezone) #调用时区转换函数
 
         #格式化输出
         if isFinal == True:
@@ -185,6 +186,7 @@ def message(type,output): #这里不能加ws
     with open("D:\\programing\\python\\eq_weather_notice\\eq_log.txt","a",encoding='utf-8') as file:
         file.write(f"{type} {output}\n")
     #打开记录
+#    shake_log.start_websocket()
 #    subprocess.call(["python","D:\\programing\\python\\eq_weather_notice\\realtime_sindo.py"])
 
 #获取当前时间函数
