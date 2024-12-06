@@ -30,7 +30,7 @@ def on_message(ws, r):
     """处理接收到的消息"""
     response = json.loads(r)  # 将收到的消息解析为json
 
-    # 打印响应并写入收到的Json（调试）
+    # 打印响应并写入收到的Json！！！（调试）！！！
 #    print(f"{response}")
 #    with open(".\\log\\json_log.txt", "a", encoding='utf-8') as file:
 #        file.write(f"{response}\n")
@@ -154,7 +154,7 @@ def on_message(ws, r):
             for warn_area in warn_areas:
                 area = area + warn_area['Chiiki'] + "（" + warn_area['Type'] +\
                     "）" + "区域最大震度：" + warn_area['Shindo1'] + "区域最小震度：" +\
-                    warn_area['Shindo2']
+                    warn_area['Shindo2'] + "\n"
             area = area + "\n"
 
         # 格式化输出
@@ -209,7 +209,7 @@ def on_close(ws, close_status_code, close_msg):
 def message(type, output, area='', shindo=''):
     """
     通知和记录函数：弹窗、终端输出，写入记录
-    area与是shindo默认为空
+    area与shindo默认为空
     """
     # plyer弹窗输出
     if shindo != '':
