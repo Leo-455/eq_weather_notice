@@ -156,6 +156,8 @@ def on_message(ws, r):
                     "）" + "区域最大震度：" + warn_area['Shindo1'] + "区域最小震度：" +\
                     warn_area['Shindo2'] + "\n"
             area = area + "\n"
+        else:
+            area = ""
 
         # 格式化输出
         if isFinal is True:
